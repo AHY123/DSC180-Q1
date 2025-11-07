@@ -1,5 +1,5 @@
-.pt
-.ptl
-.pdf
-.docx
-.cys
+*.pt
+*.ptl
+*.pdf
+*.docx
+*.cys
