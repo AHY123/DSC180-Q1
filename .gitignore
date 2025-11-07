@@ -3,3 +3,8 @@
 *.pdf
 *.docx
 *.cys
+*.txt
+*.adjlist
+*.npy
+*.npz
+*.DS_Store
