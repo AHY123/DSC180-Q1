@@ -1,0 +1,17 @@
+name: "cycle_detection"
+type: "cycle_detection"
+
+# Task configuration
+task_type: "classification"
+num_classes: 2
+
+# Evaluation metrics
+metrics: 
+  - "accuracy"
+  - "precision" 
+  - "recall"
+  - "f1_score"
+
+primary_metric: "accuracy"
+
+# Task-specific parameters (none for cycle detection)

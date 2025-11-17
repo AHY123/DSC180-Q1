@@ -1,0 +1,19 @@
+name: "sequence_base"
+type: "sequence"
+
+# Model architecture
+hidden_dim: 256
+num_layers: 4
+vocab_size: 1000
+max_seq_len: 512
+
+# Sequence-specific parameters
+tokenization_strategy: "index_based"
+include_edges: true
+max_edges: 100
+
+# Supported tasks
+supported_tasks:
+  - "cycle_detection"
+  - "shortest_path"
+  - "graph_classification"

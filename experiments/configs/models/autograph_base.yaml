@@ -1,0 +1,19 @@
+name: "autograph_base"
+type: "autograph"
+
+# Model architecture  
+hidden_dim: 256
+num_layers: 4
+vocab_size: 1000
+max_seq_len: 512
+
+# AutoGraph-specific parameters
+use_bfs_order: true
+include_node_features: true
+max_neighbors: 5
+
+# Supported tasks
+supported_tasks:
+  - "cycle_detection"
+  - "shortest_path" 
+  - "graph_classification"

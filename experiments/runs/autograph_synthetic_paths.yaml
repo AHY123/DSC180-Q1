@@ -1,0 +1,42 @@
+experiment:
+  name: "autograph_synthetic_paths"
+  description: "AutoGraph model on synthetic shortest path task"
+
+model:
+  type: "autograph"
+  config_file: "configs/models/autograph_base.yaml"
+  overrides:
+    hidden_dim: 256
+    num_layers: 4
+
+dataset:
+  type: "universal_synthetic"
+  config_file: "configs/datasets/synthetic_paths.yaml"
+  overrides:
+    max_graphs: 1000  # Limit for testing
+
+task:
+  type: "shortest_path"
+  config_file: "configs/tasks/shortest_path.yaml"
+
+training:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: "adam"
+  scheduler: "cosine"
+  early_stopping_patience: 10
+
+logging:
+  wandb:
+    enabled: true
+    project: "graph-learning-synthetic"
+    entity: "your-username"
+    tags: ["autograph", "shortest_path", "synthetic"]
+  local:
+    log_dir: "results/logs"
+    save_checkpoints: true
+    checkpoint_freq: 10
+
+# Environment specification
+environment: "autograph"

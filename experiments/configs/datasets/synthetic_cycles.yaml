@@ -1,0 +1,20 @@
+name: "synthetic_cycles"
+type: "universal_synthetic"
+
+# Data source configuration
+graph_sources:
+  - "external/graph-token/data/cycle/raw_graphs"
+  - "data/raw/synthetic_cycles"  # Fallback local path
+
+# Caching and processing
+cache_path: "data/processed/synthetic_cycles_universal.pt"
+max_graphs: 1000  # Limit for testing, remove for full dataset
+shuffle: true
+
+# Data splits
+train_ratio: 0.8
+val_ratio: 0.1
+# test_ratio: 0.1 (automatically calculated)
+
+# Random seed for reproducibility
+random_seed: 42

@@ -1,0 +1,22 @@
+name: "shortest_path"
+type: "shortest_path"
+
+# Task configuration
+task_type: "regression"
+num_classes: 1
+
+# Evaluation metrics
+metrics:
+  - "mse"
+  - "mae" 
+  - "rmse"
+  - "r2"
+  - "accuracy_within_tolerance"
+
+primary_metric: "mae"
+
+# Task-specific parameters
+max_distance: 10  # Maximum path length to include
+max_attempts: 50  # Max attempts to find valid node pairs
+distance_tolerance: 0.5  # Tolerance for "accuracy" metric
+random_seed: 42  # For reproducible node pair sampling

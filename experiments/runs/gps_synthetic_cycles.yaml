@@ -1,0 +1,42 @@
+experiment:
+  name: "gps_synthetic_cycles"
+  description: "GPS model on synthetic cycle detection task"
+
+model:
+  type: "gps"
+  config_file: "configs/models/gps_base.yaml"
+  overrides:
+    hidden_dim: 256
+    num_layers: 6
+
+dataset:
+  type: "universal_synthetic"
+  config_file: "configs/datasets/synthetic_cycles.yaml"
+  overrides:
+    max_graphs: 1000  # Limit for testing
+
+task:
+  type: "cycle_detection"
+  config_file: "configs/tasks/cycle_detection.yaml"
+
+training:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: "adam"
+  scheduler: "cosine"
+  early_stopping_patience: 10
+
+logging:
+  wandb:
+    enabled: true
+    project: "graph-learning-synthetic"
+    entity: "your-username"
+    tags: ["gps", "cycle_detection", "synthetic"]
+  local:
+    log_dir: "results/logs"
+    save_checkpoints: true
+    checkpoint_freq: 10
+
+# Environment specification
+environment: "gps"
