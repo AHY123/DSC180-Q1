@@ -1,8 +1,12 @@
 """Adapters for external model implementations."""
 
-# Adapters will be imported here as they are implemented
-# from .gps_adapter import GPSAdapter
-# from .autograph_adapter import AutoGraphAdapter
-# from .sequence_adapter import SequenceAdapter
+# Import implemented adapters
+from .gps_adapter import GPSAdapter
+from .sequence_adapter import SequenceAdapter  
+from .autograph_adapter import AutoGraphAdapter
 
-__all__ = []
+__all__ = [
+    'GPSAdapter',
+    'SequenceAdapter',
+    'AutoGraphAdapter'
+]
