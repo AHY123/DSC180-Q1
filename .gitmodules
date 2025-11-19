@@ -4,3 +4,6 @@
 [submodule "external/graph-token"]
 	path = external/graph-token
 	url = https://github.com/alip67/graph-token.git
+[submodule "external/AutoGraph"]
+	path = external/AutoGraph
+	url = https://github.com/BorgwardtLab/AutoGraph.git
