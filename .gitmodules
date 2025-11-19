@@ -1,0 +1,6 @@
+[submodule "external/GraphGPS"]
+	path = external/GraphGPS
+	url = https://github.com/rampasek/GraphGPS.git
+[submodule "external/graph-token"]
+	path = external/graph-token
+	url = https://github.com/alip67/graph-token.git
