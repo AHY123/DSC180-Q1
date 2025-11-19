@@ -1,0 +1,168 @@
+{
+  "run_id": "GPS_cycle_detection_50graphs_20251119_044913",
+  "experiment_name": "cycle_detection_50graphs",
+  "model_name": "GPS",
+  "timestamp": "20251119_044913",
+  "start_time": 1763556553.0002208,
+  "end_time": 1763556556.440248,
+  "total_time_seconds": 3.4400272369384766,
+  "device": "cuda",
+  "model_params": 29157,
+  "config": {
+    "layers": 3,
+    "dim_hidden": 32,
+    "n_heads": 4,
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "num_epochs": 100,
+    "early_stopping": true,
+    "posenc": "LapPE (4 freqs, 4 dim)",
+    "architecture": "GCN+Transformer"
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "epoch_time": 0.6568295955657959,
+      "loss": 0.8496618890762329,
+      "accuracy": 0.26
+    },
+    {
+      "epoch": 2,
+      "epoch_time": 0.1356830596923828,
+      "loss": 0.7531953811645508,
+      "accuracy": 0.42
+    },
+    {
+      "epoch": 3,
+      "epoch_time": 0.14379334449768066,
+      "loss": 0.6519999086856842,
+      "accuracy": 0.58
+    },
+    {
+      "epoch": 4,
+      "epoch_time": 0.13623738288879395,
+      "loss": 0.563178162574768,
+      "accuracy": 0.74
+    },
+    {
+      "epoch": 5,
+      "epoch_time": 0.14017510414123535,
+      "loss": 0.5067576026916504,
+      "accuracy": 0.82
+    },
+    {
+      "epoch": 6,
+      "epoch_time": 0.13834786415100098,
+      "loss": 0.42743844985961915,
+      "accuracy": 0.84
+    },
+    {
+      "epoch": 7,
+      "epoch_time": 0.14099717140197754,
+      "loss": 0.43928226828575134,
+      "accuracy": 0.76
+    },
+    {
+      "epoch": 8,
+      "epoch_time": 0.13534855842590332,
+      "loss": 0.347690212726593,
+      "accuracy": 0.88
+    },
+    {
+      "epoch": 9,
+      "epoch_time": 0.13772869110107422,
+      "loss": 0.29707552671432497,
+      "accuracy": 0.96
+    },
+    {
+      "epoch": 10,
+      "epoch_time": 0.1420307159423828,
+      "loss": 0.40469703435897825,
+      "accuracy": 0.82
+    },
+    {
+      "epoch": 11,
+      "epoch_time": 0.13940882682800293,
+      "loss": 0.2880292463302612,
+      "accuracy": 0.9
+    },
+    {
+      "epoch": 12,
+      "epoch_time": 0.13666248321533203,
+      "loss": 0.30638816237449645,
+      "accuracy": 0.9
+    },
+    {
+      "epoch": 13,
+      "epoch_time": 0.14604997634887695,
+      "loss": 0.3150613856315613,
+      "accuracy": 0.9
+    },
+    {
+      "epoch": 14,
+      "epoch_time": 0.13479876518249512,
+      "loss": 0.22810215950012208,
+      "accuracy": 0.96
+    },
+    {
+      "epoch": 15,
+      "epoch_time": 0.13766193389892578,
+      "loss": 0.21132328867912292,
+      "accuracy": 0.96
+    },
+    {
+      "epoch": 16,
+      "epoch_time": 0.13947486877441406,
+      "loss": 0.26783949255943296,
+      "accuracy": 0.86
+    },
+    {
+      "epoch": 17,
+      "epoch_time": 0.13664507865905762,
+      "loss": 0.24191279709339142,
+      "accuracy": 0.92
+    },
+    {
+      "epoch": 18,
+      "epoch_time": 0.13973307609558105,
+      "loss": 0.2078222620487213,
+      "accuracy": 0.92
+    },
+    {
+      "epoch": 19,
+      "epoch_time": 0.13556432723999023,
+      "loss": 0.1703728997707367,
+      "accuracy": 0.92
+    },
+    {
+      "epoch": 20,
+      "epoch_time": 0.13818144798278809,
+      "loss": 0.15574248313903807,
+      "accuracy": 0.94
+    },
+    {
+      "epoch": 21,
+      "epoch_time": 0.13884997367858887,
+      "loss": 0.09839309513568878,
+      "accuracy": 0.98
+    }
+  ],
+  "final_metrics": {
+    "best_accuracy": 0.98,
+    "epochs_to_convergence": 21,
+    "final_loss": 0.09839309513568878
+  },
+  "dataset_info": {
+    "num_graphs": 50,
+    "graph_type": "ER(n=10-20, p=0.3)",
+    "task": "cycle_detection",
+    "node_features": "degree",
+    "pos_encoding": "Laplacian PE"
+  },
+  "model_checkpoint_path": "checkpoints/gps_cycle_50graphs.pt",
+  "summary": {
+    "total_epochs": 21,
+    "avg_epoch_time": 0.16334296408153715,
+    "total_training_time": 3.4400272369384766
+  }
+}

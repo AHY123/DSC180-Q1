@@ -1,0 +1,60 @@
+{
+  "run_id": "GPS_cycle_detection_5000graphs_20251119_050704",
+  "experiment_name": "cycle_detection_5000graphs",
+  "model_name": "GPS",
+  "timestamp": "20251119_050704",
+  "start_time": 1763557624.2114675,
+  "end_time": 1763557663.2477446,
+  "total_time_seconds": 39.036277055740356,
+  "device": "cuda",
+  "model_params": 29157,
+  "config": {
+    "layers": 3,
+    "dim_hidden": 32,
+    "n_heads": 4,
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "num_epochs": 100,
+    "early_stopping": true,
+    "posenc": "LapPE (4 freqs, 4 dim)",
+    "architecture": "GCN+Transformer"
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "epoch_time": 13.076743364334106,
+      "loss": 0.7411463616371154,
+      "accuracy": 0.5088
+    },
+    {
+      "epoch": 2,
+      "epoch_time": 12.882401466369629,
+      "loss": 0.15929143202006818,
+      "accuracy": 0.964
+    },
+    {
+      "epoch": 3,
+      "epoch_time": 13.06735634803772,
+      "loss": 0.02308021982461214,
+      "accuracy": 0.9956
+    }
+  ],
+  "final_metrics": {
+    "best_accuracy": 0.9956,
+    "epochs_to_convergence": 3,
+    "final_loss": 0.02308021982461214
+  },
+  "dataset_info": {
+    "num_graphs": 5000,
+    "graph_type": "ER(n=10-20, p=0.3)",
+    "task": "cycle_detection",
+    "node_features": "degree",
+    "pos_encoding": "Laplacian PE"
+  },
+  "model_checkpoint_path": "checkpoints/gps_cycle_5000graphs.pt",
+  "summary": {
+    "total_epochs": 3,
+    "avg_epoch_time": 13.008833726247152,
+    "total_training_time": 39.036277055740356
+  }
+}

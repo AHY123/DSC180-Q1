@@ -1,0 +1,185 @@
+{
+  "50 Graphs (ER p=0.3)": {
+    "num_graphs": 50,
+    "cycle_count": 39,
+    "cycle_percentage": 78.0,
+    "nodes": {
+      "min": 5.0,
+      "max": 19.0,
+      "mean": 11.06,
+      "std": 4.531710493842254,
+      "median": 10.5,
+      "total": 553.0
+    },
+    "edges": {
+      "min": 0.0,
+      "max": 141.0,
+      "mean": 32.86,
+      "std": 36.595087101959464,
+      "median": 16.5,
+      "total": 1643.0
+    },
+    "density": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.4764952800897073,
+      "std": 0.2977461147206513,
+      "median": 0.5,
+      "total": null
+    },
+    "avg_degree": {
+      "min": 0.0,
+      "max": 15.666666666666666,
+      "mean": 4.893327691056794,
+      "std": 4.103780028720706,
+      "median": 3.3888888888888893,
+      "total": null
+    },
+    "num_components": {
+      "min": 1.0,
+      "max": 14.0,
+      "mean": 2.24,
+      "std": 2.782516846310189,
+      "median": 1.0,
+      "total": null
+    },
+    "diameter": {
+      "min": 1.0,
+      "max": 6.0,
+      "mean": 2.6216216216216215,
+      "std": 1.1472965014481689,
+      "median": 2.0,
+      "total": null
+    },
+    "clustering_coeff": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.4418911098285196,
+      "std": 0.33622082928505803,
+      "median": 0.47264957264957264,
+      "total": null
+    }
+  },
+  "500 Graphs (ER p=0.3)": {
+    "num_graphs": 500,
+    "cycle_count": 411,
+    "cycle_percentage": 82.2,
+    "nodes": {
+      "min": 5.0,
+      "max": 19.0,
+      "mean": 11.784,
+      "std": 4.433209221320374,
+      "median": 12.0,
+      "total": 5892.0
+    },
+    "edges": {
+      "min": 0.0,
+      "max": 169.0,
+      "mean": 38.074,
+      "std": 36.87926956977321,
+      "median": 24.0,
+      "total": 19037.0
+    },
+    "density": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.5088271630674107,
+      "std": 0.2844897172423294,
+      "median": 0.5185672514619883,
+      "total": null
+    },
+    "avg_degree": {
+      "min": 0.0,
+      "max": 17.789473684210527,
+      "mean": 5.541829285059626,
+      "std": 4.045268516564359,
+      "median": 4.563492063492063,
+      "total": null
+    },
+    "num_components": {
+      "min": 1.0,
+      "max": 14.0,
+      "mean": 1.9,
+      "std": 2.22216111027081,
+      "median": 1.0,
+      "total": null
+    },
+    "diameter": {
+      "min": 1.0,
+      "max": 7.0,
+      "mean": 2.5338541666666665,
+      "std": 0.9320115675601737,
+      "median": 2.0,
+      "total": null
+    },
+    "clustering_coeff": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.4708174979386307,
+      "std": 0.3272990140091398,
+      "median": 0.5011275183150183,
+      "total": null
+    }
+  },
+  "5000 Graphs (ER p=0.3)": {
+    "num_graphs": 5000,
+    "cycle_count": 4979,
+    "cycle_percentage": 99.58,
+    "nodes": {
+      "min": 10.0,
+      "max": 20.0,
+      "mean": 15.0156,
+      "std": 3.1763747637833917,
+      "median": 15.0,
+      "total": 75078.0
+    },
+    "edges": {
+      "min": 5.0,
+      "max": 76.0,
+      "mean": 33.0526,
+      "std": 14.702973618965654,
+      "median": 31.0,
+      "total": 165263.0
+    },
+    "density": {
+      "min": 0.1111111111111111,
+      "max": 0.5333333333333333,
+      "mean": 0.2995716226772883,
+      "std": 0.04815973441613228,
+      "median": 0.3,
+      "total": null
+    },
+    "avg_degree": {
+      "min": 1.0,
+      "max": 7.6,
+      "mean": 4.1999145946073195,
+      "std": 1.1401731550975802,
+      "median": 4.205263157894737,
+      "total": null
+    },
+    "num_components": {
+      "min": 1.0,
+      "max": 5.0,
+      "mean": 1.1538,
+      "std": 0.44152639785181585,
+      "median": 1.0,
+      "total": null
+    },
+    "diameter": {
+      "min": 2.0,
+      "max": 9.0,
+      "mean": 3.6042192157761983,
+      "std": 0.7235169725347921,
+      "median": 3.0,
+      "total": null
+    },
+    "clustering_coeff": {
+      "min": 0.0,
+      "max": 0.6961111111111111,
+      "mean": 0.27793012000418565,
+      "std": 0.1034952654335128,
+      "median": 0.28302579365079367,
+      "total": null
+    }
+  }
+}

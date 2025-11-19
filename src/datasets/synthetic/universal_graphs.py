@@ -8,8 +8,8 @@ import networkx as nx
 from torch_geometric.data import Data
 from torch_geometric.utils import from_networkx
 
-from ..core.base_dataset import BaseDataset
-from ..core.registry import register_dataset
+from src.core.base_dataset import BaseDataset
+from src.core.registry import register_dataset
 
 
 @register_dataset("universal_synthetic")
@@ -39,7 +39,7 @@ class UniversalSyntheticDataset(BaseDataset):
             
         if os.path.exists(self.cache_path):
             print(f"Loading cached universal dataset from {self.cache_path}")
-            self._data_cache = torch.load(self.cache_path)
+            self._data_cache = torch.load(self.cache_path, weights_only=False)
             return self._data_cache
         
         print("Generating universal synthetic dataset...")

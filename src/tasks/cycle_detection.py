@@ -5,8 +5,8 @@ import networkx as nx
 from torch_geometric.utils import to_networkx
 from typing import Dict, List
 
-from ..core.base_task import BaseTask
-from ..core.registry import register_task
+from src.core.base_task import BaseTask
+from src.core.registry import register_task
 
 
 @register_task("cycle_detection")

@@ -1,0 +1,44 @@
+{
+  "run_id": "GIN_cycle_detection_5000graphs_20251119_055353",
+  "experiment_name": "cycle_detection_5000graphs",
+  "model_name": "GIN",
+  "timestamp": "20251119_055353",
+  "start_time": 1763560433.204421,
+  "end_time": 1763560438.9110668,
+  "total_time_seconds": 5.706645727157593,
+  "device": "cuda",
+  "model_params": 34054,
+  "config": {
+    "model_type": "GIN",
+    "hidden_dim": 64,
+    "num_layers": 4,
+    "batch_size": 8,
+    "lr": 0.001,
+    "num_graphs": 5000
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "epoch_time": 5.7013514041900635,
+      "loss": 0.08635577483468515,
+      "accuracy": 0.983
+    }
+  ],
+  "final_metrics": {
+    "best_accuracy": 0.983,
+    "epochs_to_convergence": 1,
+    "final_loss": 0.08635577483468515
+  },
+  "dataset_info": {
+    "num_graphs": 5000,
+    "graph_type": "ER(n=variable, p=0.3)",
+    "task": "cycle_detection",
+    "node_features": "degree"
+  },
+  "model_checkpoint_path": "checkpoints/gin_cycle_5000graphs.pt",
+  "summary": {
+    "total_epochs": 1,
+    "avg_epoch_time": 5.7013514041900635,
+    "total_training_time": 5.706645727157593
+  }
+}

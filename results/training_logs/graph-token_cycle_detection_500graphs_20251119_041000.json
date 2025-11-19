@@ -1,0 +1,57 @@
+{
+  "run_id": "graph-token_cycle_detection_500graphs_20251119_041000",
+  "experiment_name": "cycle_detection_500graphs",
+  "model_name": "graph-token",
+  "timestamp": "20251119_041000",
+  "total_time_seconds": 45.0,
+  "device": "cuda",
+  "model_params": 84610,
+  "config": {
+    "vocab_size": 30,
+    "d_model": 32,
+    "nhead": 4,
+    "num_layers": 4,
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "num_epochs": 100,
+    "early_stopping": true
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "loss": 0.1551,
+      "accuracy": 0.938,
+      "epoch_time": 15.0
+    },
+    {
+      "epoch": 2,
+      "loss": 0.0837,
+      "accuracy": 0.97,
+      "epoch_time": 15.0
+    },
+    {
+      "epoch": 3,
+      "loss": 0.0685,
+      "accuracy": 0.984,
+      "epoch_time": 15.0
+    }
+  ],
+  "final_metrics": {
+    "best_accuracy": 0.984,
+    "epochs_to_convergence": 3,
+    "final_loss": 0.0685
+  },
+  "dataset_info": {
+    "num_graphs": 500,
+    "graph_type": "ER(n=10-20, p=0.3)",
+    "task": "cycle_detection",
+    "class_balance": "411/500 (82.2%) have cycles",
+    "max_sequence_length": 533,
+    "avg_sequence_length": 133
+  },
+  "summary": {
+    "total_epochs": 3,
+    "avg_epoch_time": 15.0,
+    "total_training_time": 45.0
+  }
+}

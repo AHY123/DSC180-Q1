@@ -1,0 +1,113 @@
+{
+  "task": "cycle_detection",
+  "model_architecture": "TinyTransformer (Tier 1)",
+  "model_specs": {
+    "d_model": 32,
+    "nhead": 4,
+    "num_layers": 4,
+    "dim_feedforward": 128
+  },
+  "datasets": {
+    "test_set": "50 ER graphs (n=10-20, p=0.3)",
+    "full_set": "500 ER graphs (n=10-20, p=0.3)"
+  },
+  "tokenization_approaches": {
+    "graph-token": {
+      "description": "Text-based graph serialization with task-specific tokens",
+      "vocab_size": 30,
+      "sample_tokens": [
+        "<pad>",
+        "<unk>",
+        "0",
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "2",
+        "3"
+      ],
+      "test_set": {
+        "model_params": 68450,
+        "epochs_to_convergence": 4,
+        "final_accuracy": 1.0
+      },
+      "full_set": {
+        "model_params": 84610,
+        "epochs_to_convergence": 3,
+        "final_accuracy": 0.984
+      },
+      "tokenization_stats": {
+        "note": "Includes full graph structure + task question/answer",
+        "format": "<bos> edges <n> nodes <q> task <p> answer <eos>",
+        "avg_sequence_length": 133,
+        "max_sequence_length": 533
+      }
+    },
+    "AutoGraph": {
+      "description": "Walk-based graph tokenization with special traversal tokens",
+      "vocab_size": 25,
+      "special_tokens": [
+        "sos",
+        "reset",
+        "ladj",
+        "radj",
+        "eos",
+        "pad"
+      ],
+      "max_num_nodes": 19,
+      "test_set": {
+        "model_params": 84450,
+        "epochs_to_convergence": 3,
+        "final_accuracy": 1.0
+      },
+      "full_set": {
+        "model_params": 84450,
+        "epochs_to_convergence": 5,
+        "final_accuracy": 0.98
+      },
+      "tokenization_stats": {
+        "note": "Walk-based sequences are much shorter than graph-token",
+        "format": "sos [walk tokens with adjacency markers] eos",
+        "avg_sequence_length": "~30",
+        "max_sequence_length": "~31"
+      }
+    }
+  },
+  "observations": {
+    "vocabulary": {
+      "graph-token": "Larger vocab (30 tokens) with explicit task tokens",
+      "AutoGraph": "Smaller vocab (25 tokens) focused on graph structure"
+    },
+    "sequence_length": {
+      "graph-token": "Much longer sequences (max ~533 tokens observed)",
+      "AutoGraph": "Compact sequences (max ~31 tokens observed)",
+      "implication": "AutoGraph more memory efficient for transformers"
+    },
+    "convergence": {
+      "test_set": "Both converge in 3-4 epochs to 100% accuracy",
+      "full_set": "graph-token slightly faster (3 vs 5 epochs) but similar final accuracy"
+    },
+    "model_size": {
+      "graph-token": "~85K params (due to 1024 positional embeddings)",
+      "AutoGraph": "~84K params (shorter sequences, same architecture)",
+      "note": "Difference mainly from positional embedding size"
+    },
+    "integration": {
+      "graph-token": "Uses external/graph-token CycleCheck task (easy)",
+      "AutoGraph": "Uses AutoGraph tokenizer with our task labels (moderate complexity)"
+    }
+  },
+  "next_steps": [
+    "Test on more complex tasks (shortest path, subgraph matching)",
+    "Implement GPS (GraphGPS) integration for comparison",
+    "Evaluate on larger graphs (n > 20)",
+    "Compare generalization to test sets",
+    "Measure inference speed for each approach"
+  ]
+}

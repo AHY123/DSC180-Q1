@@ -1,0 +1,95 @@
+{
+  "run_id": "GPS_shortest_path_5000graphs_k1_20251119_061446",
+  "experiment_name": "shortest_path_5000graphs_k1",
+  "model_name": "GPS",
+  "timestamp": "20251119_061446",
+  "start_time": 1763561686.235374,
+  "end_time": 1763561721.7924788,
+  "total_time_seconds": 35.55710482597351,
+  "device": "cuda",
+  "model_params": 29543,
+  "config": {
+    "data_dir": "data/synthetic_er_5000",
+    "num_graphs": 5000,
+    "k_pairs": 1,
+    "max_distance": 10,
+    "batch_size": 32,
+    "lr": 0.001,
+    "num_classes": 11
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "epoch_time": 4.114266395568848,
+      "train_loss": 1.4368968383789062,
+      "train_accuracy": 0.459,
+      "eval_loss": 1.1169394443511962,
+      "eval_accuracy": 0.4938,
+      "eval_mae": 0.548
+    },
+    {
+      "epoch": 2,
+      "epoch_time": 3.6188242435455322,
+      "train_loss": 1.1206123790740967,
+      "train_accuracy": 0.4906,
+      "eval_loss": 1.1355312337875367,
+      "eval_accuracy": 0.4934,
+      "eval_mae": 0.5496
+    },
+    {
+      "epoch": 3,
+      "epoch_time": 3.624983310699463,
+      "train_loss": 1.106943453025818,
+      "train_accuracy": 0.4916,
+      "eval_loss": 1.125476939201355,
+      "eval_accuracy": 0.4918,
+      "eval_mae": 0.5516
+    },
+    {
+      "epoch": 4,
+      "epoch_time": 3.6503865718841553,
+      "train_loss": 1.0874007523536682,
+      "train_accuracy": 0.4954,
+      "eval_loss": 1.1963040363311768,
+      "eval_accuracy": 0.3796,
+      "eval_mae": 0.7446
+    },
+    {
+      "epoch": 5,
+      "epoch_time": 3.63815975189209,
+      "train_loss": 0.36555012793540953,
+      "train_accuracy": 0.8804,
+      "eval_loss": 0.11546385215520859,
+      "eval_accuracy": 0.9632,
+      "eval_mae": 0.0428
+    },
+    {
+      "epoch": 6,
+      "epoch_time": 3.654552459716797,
+      "train_loss": 0.14273238978981972,
+      "train_accuracy": 0.9504,
+      "eval_loss": 0.543064174747467,
+      "eval_accuracy": 0.8276,
+      "eval_mae": 0.1762
+    }
+  ],
+  "final_metrics": {
+    "best_accuracy": 0.9504,
+    "best_mae": 0.0428,
+    "epochs_to_convergence": 6,
+    "final_train_loss": 0.14273238978981972,
+    "final_eval_mae": 0.1762
+  },
+  "dataset_info": {
+    "num_pairs": 5000,
+    "graph_type": "ER(n=variable, p=0.3)",
+    "task": "shortest_path",
+    "node_features": "degree + source/target indicators"
+  },
+  "model_checkpoint_path": "checkpoints/gps_shortest_path_5000graphs_k1.pt",
+  "summary": {
+    "total_epochs": 6,
+    "avg_epoch_time": 3.716862122217814,
+    "total_training_time": 35.55710482597351
+  }
+}
