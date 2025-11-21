@@ -1,175 +1,306 @@
-"""Experiment runner script for the graph learning platform."""
+#!/usr/bin/env python3
+"""Unified experiment runner using model registry and unified trainer.
 
-import os
-import sys
+This script demonstrates the new unified infrastructure:
+- Model Registry: Create any model type with consistent interface
+- Unified Trainer: Train any model with single training loop
+- Wandb Integration: Optional experiment tracking
+
+Usage:
+    # GNN models
+    uv run python scripts/run_experiment.py --model GIN --task cycle --data data/synthetic_er_5000
+
+    # GPS model
+    uv run python scripts/run_experiment.py --model GPS --task shortest_path --data data/synthetic_er_5000 --gps_config configs/GPS/...
+
+    # Transformer models
+    uv run python scripts/run_experiment.py --model AutoGraph --task cycle --data data/synthetic_er_5000
+"""
+
 import argparse
-import yaml
-from typing import Dict, Any
+import sys
+from pathlib import Path
+import torch
+from datetime import datetime
+import wandb
 
-# Add src to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.registry import model_registry, dataset_registry, task_registry
-
-
-def load_config(config_path: str) -> Dict[str, Any]:
-    """Load experiment configuration from YAML file.
-    
-    Args:
-        config_path: Path to configuration file
-        
-    Returns:
-        Configuration dictionary
-    """
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-    
-    # Load and merge base configurations
-    if 'model' in config and 'config_file' in config['model']:
-        model_config_path = os.path.join('experiments', config['model']['config_file'])
-        if os.path.exists(model_config_path):
-            with open(model_config_path, 'r') as f:
-                base_model_config = yaml.safe_load(f)
-                base_model_config.update(config['model'].get('overrides', {}))
-                config['model'].update(base_model_config)
-    
-    if 'dataset' in config and 'config_file' in config['dataset']:
-        dataset_config_path = os.path.join('experiments', config['dataset']['config_file'])
-        if os.path.exists(dataset_config_path):
-            with open(dataset_config_path, 'r') as f:
-                base_dataset_config = yaml.safe_load(f)
-                base_dataset_config.update(config['dataset'].get('overrides', {}))
-                config['dataset'].update(base_dataset_config)
-    
-    if 'task' in config and 'config_file' in config['task']:
-        task_config_path = os.path.join('experiments', config['task']['config_file'])
-        if os.path.exists(task_config_path):
-            with open(task_config_path, 'r') as f:
-                base_task_config = yaml.safe_load(f)
-                config['task'].update(base_task_config)
-    
-    return config
+from src.core.model_registry import get_registry
+from src.core.trainer import UnifiedTrainer
+from src.datasets.synthetic_dataset import load_synthetic_graph_dataset
+from src.adapters.autograph_adapter import AutoGraphTokenizer
+from torch_geometric.loader import DataLoader as PyGDataLoader
+from torch.utils.data import DataLoader, TensorDataset
 
 
-def check_environment(required_env: str):
-    """Check if the required environment is active.
-    
-    Args:
-        required_env: Required conda environment name
-    """
-    # This is a simplified check - in practice would verify conda env
-    print(f"Note: This experiment expects '{required_env}' environment to be active")
-    print("Ensure you have run the appropriate setup commands")
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run unified experiment')
+
+    # Model selection
+    parser.add_argument('--model', type=str, required=True,
+                       choices=['GIN', 'GCN', 'GAT', 'GPS', 'AutoGraph', 'graph-token'],
+                       help='Model type')
+
+    # Task and data
+    parser.add_argument('--task', type=str, required=True,
+                       choices=['cycle', 'shortest_path'],
+                       help='Task type')
+    parser.add_argument('--data', type=str, required=True,
+                       help='Path to dataset directory')
+
+    # Model hyperparameters
+    parser.add_argument('--hidden_dim', type=int, default=64,
+                       help='Hidden dimension size')
+    parser.add_argument('--num_layers', type=int, default=3,
+                       help='Number of layers')
+    parser.add_argument('--dropout', type=float, default=0.1,
+                       help='Dropout rate')
+
+    # Training hyperparameters
+    parser.add_argument('--batch_size', type=int, default=32,
+                       help='Batch size')
+    parser.add_argument('--epochs', type=int, default=100,
+                       help='Number of epochs')
+    parser.add_argument('--lr', type=float, default=0.001,
+                       help='Learning rate')
+    parser.add_argument('--early_stopping', action='store_true',
+                       help='Enable early stopping')
+    parser.add_argument('--patience', type=int, default=10,
+                       help='Early stopping patience')
+
+    # GPS-specific
+    parser.add_argument('--gps_config', type=str, default=None,
+                       help='Path to GPS config file (required for GPS model)')
+
+    # Transformer-specific
+    parser.add_argument('--d_model', type=int, default=32,
+                       help='Transformer model dimension')
+    parser.add_argument('--nhead', type=int, default=4,
+                       help='Number of attention heads')
+    parser.add_argument('--max_len', type=int, default=2048,
+                       help='Max sequence length')
+
+    # Shortest path task
+    parser.add_argument('--k_pairs', type=int, default=10,
+                       help='Number of node pairs for shortest path')
+    parser.add_argument('--max_distance', type=int, default=5,
+                       help='Max distance for shortest path buckets')
+
+    # Experiment tracking
+    parser.add_argument('--no_wandb', action='store_true',
+                       help='Disable wandb logging')
+    parser.add_argument('--output_dir', type=str, default='results/generalization',
+                       help='Directory for results')
+    parser.add_argument('--checkpoint_dir', type=str, default=None,
+                       help='Directory for model checkpoints')
+
+    return parser.parse_args()
 
 
-def create_components(config: Dict[str, Any]):
-    """Create model, dataset, and task components from configuration.
-    
-    Args:
-        config: Experiment configuration
-        
-    Returns:
-        Tuple of (model, dataset, task)
-    """
-    # Create dataset
-    print(f"Creating dataset: {config['dataset']['type']}")
-    dataset = dataset_registry.create(config['dataset']['type'], config['dataset'])
-    
-    # Create task
-    print(f"Creating task: {config['task']['type']}")
-    task = task_registry.create(config['task']['type'], config['task'])
-    
+def load_data(args):
+    """Load and prepare data based on model type."""
+    print(f"\n=== Loading {args.task} data from {args.data} ===")
+
+    base_dir = Path(args.data)
+    train_graphs = load_synthetic_graph_dataset(base_dir / 'train', args.task)
+    val_graphs = load_synthetic_graph_dataset(base_dir / 'val', args.task)
+    test_graphs = load_synthetic_graph_dataset(base_dir / 'test', args.task)
+
+    print(f"Loaded {len(train_graphs)} train, {len(val_graphs)} val, {len(test_graphs)} test graphs")
+
+    # Get task info
+    num_classes = train_graphs[0].y.item() + 1 if args.task == 'cycle' else (args.max_distance + 2)
+    num_features = train_graphs[0].num_node_features
+
+    # Create data loaders based on model type
+    is_transformer = args.model in ['AutoGraph', 'graph-token']
+
+    if is_transformer:
+        # Tokenize for transformers
+        print(f"\nTokenizing graphs for {args.model}...")
+        tokenizer = AutoGraphTokenizer(
+            serialization='dfs' if args.model == 'AutoGraph' else 'index',
+            max_seq_len=args.max_len
+        )
+
+        train_tokens = tokenizer.tokenize_batch(train_graphs)
+        val_tokens = tokenizer.tokenize_batch(val_graphs)
+        test_tokens = tokenizer.tokenize_batch(test_graphs)
+
+        # Extract labels
+        train_labels = torch.tensor([g.y.item() for g in train_graphs])
+        val_labels = torch.tensor([g.y.item() for g in val_graphs])
+        test_labels = torch.tensor([g.y.item() for g in test_graphs])
+
+        # Create dataloaders
+        train_dataset = TensorDataset(train_tokens['input_ids'],
+                                     train_tokens['attention_mask'],
+                                     train_labels)
+        val_dataset = TensorDataset(val_tokens['input_ids'],
+                                   val_tokens['attention_mask'],
+                                   val_labels)
+        test_dataset = TensorDataset(test_tokens['input_ids'],
+                                    test_tokens['attention_mask'],
+                                    test_labels)
+
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+        test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
+
+        vocab_size = tokenizer.get_vocab_size()
+
+    else:
+        # PyG data loaders for GNNs and GPS
+        train_loader = PyGDataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
+        val_loader = PyGDataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
+        test_loader = PyGDataLoader(test_graphs, batch_size=args.batch_size, shuffle=False)
+        vocab_size = None
+
+    return train_loader, val_loader, test_loader, num_classes, num_features, vocab_size
+
+
+def create_model(args, num_features, num_classes, vocab_size):
+    """Create model using model registry."""
+    print(f"\n=== Creating {args.model} model ===")
+
+    registry = get_registry()
+
+    # Build model config
+    if args.model in ['GIN', 'GCN', 'GAT']:
+        config = {
+            'num_features': num_features,
+            'num_classes': num_classes,
+            'hidden_dim': args.hidden_dim,
+            'num_layers': args.num_layers,
+            'dropout': args.dropout
+        }
+        if args.model == 'GAT':
+            config['num_heads'] = 4
+
+    elif args.model == 'GPS':
+        if args.gps_config is None:
+            raise ValueError("GPS model requires --gps_config argument")
+        config = {
+            'num_features': num_features,
+            'num_classes': num_classes,
+            'config_file': args.gps_config
+        }
+
+    elif args.model in ['AutoGraph', 'graph-token']:
+        config = {
+            'vocab_size': vocab_size,
+            'num_classes': num_classes,
+            'd_model': args.d_model,
+            'nhead': args.nhead,
+            'num_layers': args.num_layers,
+            'max_len': args.max_len,
+            'dropout': args.dropout
+        }
+
     # Create model
-    print(f"Creating model: {config['model']['type']}")
-    model = model_registry.create(config['model']['type'], config['model'])
-    
-    return model, dataset, task
+    model = registry.create_model(args.model, config)
 
+    # Count parameters
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Model created with {total_params:,} parameters")
 
-def run_experiment(config_path: str):
-    """Run a complete experiment.
-    
-    Args:
-        config_path: Path to experiment configuration
-    """
-    print(f"Loading configuration from {config_path}")
-    config = load_config(config_path)
-    
-    experiment_name = config['experiment']['name']
-    print(f"Starting experiment: {experiment_name}")
-    
-    # Check environment requirements
-    if 'environment' in config:
-        check_environment(config['environment'])
-    
-    # Create components
-    model, dataset, task = create_components(config)
-    
-    # Prepare data
-    print("Preparing task data...")
-    task_data = task.prepare_data(dataset)
-    print(f"Prepared {len(task_data)} samples")
-    
-    # Get data splits
-    print("Creating data splits...")
-    train_data, val_data, test_data = dataset.get_splits()
-    print(f"Data splits - Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
-    
-    # For now, just test the pipeline - full training would be implemented here
-    print("Testing model forward pass...")
-    if len(task_data) > 0:
-        sample_data = task_data[0]
-        try:
-            # Test model preprocessing and forward pass
-            output = model.forward([sample_data])  # Pass as list for batch processing
-            print(f"Model output shape: {output.shape if hasattr(output, 'shape') else type(output)}")
-            
-            # Test loss computation
-            if hasattr(sample_data, 'y'):
-                loss = model.loss(output, sample_data.y)
-                print(f"Sample loss: {loss.item() if hasattr(loss, 'item') else loss}")
-            
-            # Test evaluation
-            if hasattr(sample_data, 'y'):
-                metrics = task.evaluate(output, sample_data.y.unsqueeze(0))
-                print(f"Sample metrics: {metrics}")
-                
-        except Exception as e:
-            print(f"Error in model forward pass: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    print(f"Experiment {experiment_name} pipeline test completed")
-    
-    # TODO: Implement full training loop
-    print("Note: Full training loop not yet implemented")
-    
-    return model, dataset, task
+    return model
 
 
 def main():
-    """Main function for experiment runner."""
-    parser = argparse.ArgumentParser(description='Run graph learning experiments')
-    parser.add_argument('--config', required=True,
-                       help='Path to experiment configuration file')
-    parser.add_argument('--dry-run', action='store_true',
-                       help='Test configuration and pipeline without training')
-    
-    args = parser.parse_args()
-    
-    try:
-        run_experiment(args.config)
-    except Exception as e:
-        print(f"Experiment failed: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
-    
+    args = parse_args()
+
+    print("=" * 80)
+    print(f"Unified Experiment: {args.model} on {args.task}")
+    print("=" * 80)
+
+    # Setup device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"\nUsing device: {device}")
+
+    # Load data
+    train_loader, val_loader, test_loader, num_classes, num_features, vocab_size = load_data(args)
+
+    # Create model
+    model = create_model(args, num_features, num_classes, vocab_size)
+
+    # Initialize wandb
+    use_wandb = not args.no_wandb
+    if use_wandb:
+        wandb.init(
+            project="DSC180-GNN-vs-Transformers",
+            name=f"{args.task}_{args.model}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            config={
+                "model_type": args.model,
+                "task": args.task,
+                "hidden_dim": args.hidden_dim if args.model not in ['AutoGraph', 'graph-token'] else args.d_model,
+                "num_layers": args.num_layers,
+                "batch_size": args.batch_size,
+                "learning_rate": args.lr,
+                "epochs": args.epochs,
+                "dropout": args.dropout,
+                "dataset": Path(args.data).name,
+                "early_stopping": args.early_stopping,
+                "k_pairs": args.k_pairs if args.task == 'shortest_path' else None,
+                "max_distance": args.max_distance if args.task == 'shortest_path' else None,
+            },
+            tags=[args.task, args.model, "generalization", "unified-infrastructure"]
+        )
+
+    # Create trainer
+    trainer = UnifiedTrainer(
+        model=model,
+        device=device,
+        model_type=args.model,
+        task_type=args.task,
+        num_classes=num_classes,
+        use_wandb=use_wandb
+    )
+
+    # Setup optimizer
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+
+    # Train
+    checkpoint_dir = Path(args.checkpoint_dir) if args.checkpoint_dir else None
+    results = trainer.train(
+        train_loader=train_loader,
+        valid_loader=val_loader,
+        test_loader=test_loader,
+        optimizer=optimizer,
+        num_epochs=args.epochs,
+        early_stopping=args.early_stopping,
+        early_stopping_patience=args.patience,
+        checkpoint_dir=checkpoint_dir
+    )
+
+    # Save results
+    output_dir = Path(args.output_dir)
+    config_dict = {
+        'task': args.task,
+        'model': args.model,
+        'hidden_dim': args.hidden_dim,
+        'num_layers': args.num_layers,
+        'batch_size': args.batch_size,
+        'learning_rate': args.lr,
+        'epochs': args.epochs,
+        'dataset': Path(args.data).name,
+    }
+
+    json_path = trainer.save_results(results, output_dir, config_dict)
+
+    # Finish wandb
+    if use_wandb:
+        wandb.finish()
+
+    print("\n" + "=" * 80)
+    print("Experiment complete!")
+    print("=" * 80)
+    print(f"Results saved to: {json_path}")
+
     return 0
 
 
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())

@@ -18,7 +18,7 @@ def load_latest_results():
     results = {}
 
     # Define what we're looking for
-    models = ['GIN', 'GPS', 'AutoGraph']
+    models = ['GIN', 'GPS', 'AutoGraph', 'graph-token']
     tasks = ['cycle', 'shortest_path']
     datasets = ['500', '5000']
 
@@ -54,17 +54,17 @@ def create_comparison_table(results):
                 dataset = parts[1]
                 model = parts[2]
 
-            final = data['results']['final_evaluation']
+            final = data['final_results']
 
             rows.append({
                 'Task': task.replace('_', ' ').title(),
                 'Dataset Size': dataset,
                 'Model': model,
-                'Parameters': f"{data['config']['model_parameters']:,}",
-                'Train Acc': f"{final['train']['accuracy']:.2f}%",
-                'Valid Acc': f"{final['valid']['accuracy']:.2f}%",
-                'Test Acc': f"{final['test']['accuracy']:.2f}%",
-                'Train-Test Gap': f"{data['analysis']['accuracy_gaps']['train_test']:.2f}%",
+                'Parameters': f"{data['metadata']['total_params']:,}",
+                'Train Acc': f"{final['train']['accuracy']*100:.2f}%",
+                'Valid Acc': f"{final['valid']['accuracy']*100:.2f}%",
+                'Test Acc': f"{final['test']['accuracy']*100:.2f}%",
+                'Train-Test Gap': f"{data['analysis']['train_test_gap']*100:.2f}%",
             })
 
     df = pd.DataFrame(rows)
@@ -91,11 +91,11 @@ def plot_accuracy_comparison(results, output_dir):
                 model = parts[2]
 
             if task in data_by_task:
-                final = data['results']['final_evaluation']
+                final = data['final_results']
                 data_by_task[task].append({
                     'model': model,
                     'dataset': f"{dataset} graphs",
-                    'test_acc': final['test']['accuracy']
+                    'test_acc': final['test']['accuracy'] * 100
                 })
 
     # Create subplots
@@ -109,10 +109,10 @@ def plot_accuracy_comparison(results, output_dir):
 
         # Create grouped bar chart
         datasets = sorted(df['dataset'].unique())
-        models = ['GIN', 'GPS', 'AutoGraph']
+        models = ['GIN', 'GPS', 'AutoGraph', 'graph-token']
 
         x = np.arange(len(datasets))
-        width = 0.25
+        width = 0.2
 
         for i, model in enumerate(models):
             model_data = df[df['model'] == model]
@@ -120,7 +120,7 @@ def plot_accuracy_comparison(results, output_dir):
                    if len(model_data[model_data['dataset'] == ds]) > 0 else 0
                    for ds in datasets]
 
-            offset = (i - 1) * width
+            offset = (i - 1.5) * width
             bars = axes[idx].bar(x + offset, accs, width, label=model)
 
             # Add value labels on bars
@@ -160,7 +160,7 @@ def plot_generalization_gaps(results, output_dir):
                 dataset = parts[1]
                 model = parts[2]
 
-            gap = result['analysis']['accuracy_gaps']['train_test']
+            gap = result['analysis']['train_test_gap'] * 100
             data.append({
                 'Task': task,
                 'Dataset': f"{dataset} graphs",
@@ -176,10 +176,10 @@ def plot_generalization_gaps(results, output_dir):
         task_df = df[df['Task'] == task]
 
         datasets = sorted(task_df['Dataset'].unique())
-        models = ['GIN', 'GPS', 'AutoGraph']
+        models = ['GIN', 'GPS', 'AutoGraph', 'graph-token']
 
         x = np.arange(len(datasets))
-        width = 0.25
+        width = 0.2
 
         for i, model in enumerate(models):
             model_data = task_df[task_df['Model'] == model]
@@ -187,7 +187,7 @@ def plot_generalization_gaps(results, output_dir):
                    if len(model_data[model_data['Dataset'] == ds]) > 0 else 0
                    for ds in datasets]
 
-            offset = (i - 1) * width
+            offset = (i - 1.5) * width
             bars = axes[idx].bar(x + offset, gaps, width, label=model)
 
             # Add value labels
@@ -228,7 +228,7 @@ def plot_model_parameters(results, output_dir):
                 model = parts[2]
 
             if model not in models_params:
-                models_params[model] = result['config']['model_parameters']
+                models_params[model] = result['metadata']['total_params']
 
     fig, ax = plt.subplots(figsize=(8, 5))
 

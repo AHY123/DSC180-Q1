@@ -13,6 +13,7 @@ import time
 import json
 from datetime import datetime
 from pathlib import Path
+import wandb
 
 # Import AutoGraph tokenizer
 from autograph.datamodules.data.tokenizer import Graph2TrailTokenizer
@@ -239,6 +240,8 @@ def main():
                         help='Node pairs per graph (shortest path only)')
     parser.add_argument('--max_distance', type=int, default=10,
                         help='Max distance (shortest path only)')
+    parser.add_argument('--no_wandb', action='store_true',
+                        help='Disable wandb logging')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -246,6 +249,31 @@ def main():
     print(f"Base directory: {args.base_dir}")
     print(f"Task: {args.task}")
     print(f"Model: AutoGraph")
+
+    # Initialize wandb
+    use_wandb = not args.no_wandb
+    if use_wandb:
+        wandb.init(
+            project="DSC180-GNN-vs-Transformers",
+            name=f"{args.task}_AutoGraph_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            config={
+                "model_type": "AutoGraph",
+                "task": args.task,
+                "d_model": 32,
+                "nhead": 4,
+                "num_layers": 4,
+                "batch_size": args.batch_size,
+                "learning_rate": args.lr,
+                "epochs": args.epochs,
+                "dataset": os.path.basename(args.base_dir),
+                "k_pairs": args.k_pairs if args.task == 'shortest_path' else None,
+                "max_distance": args.max_distance if args.task == 'shortest_path' else None,
+            },
+            tags=[args.task, "AutoGraph", "generalization", "train-val-test-splits"]
+        )
+        print(f"Wandb run: {wandb.run.name}")
+    else:
+        print("Wandb logging disabled")
 
     # Task configuration
     if args.task == 'cycle':
@@ -373,6 +401,17 @@ def main():
             'epoch_time': float(epoch_time)
         })
 
+        # Log to wandb
+        if use_wandb:
+            wandb.log({
+                'epoch': epoch + 1,
+                'train/loss': train_loss,
+                'train/accuracy': train_acc,
+                'val/loss': val_loss,
+                'val/accuracy': val_acc,
+                'epoch_time': epoch_time,
+            })
+
         if (epoch + 1) % 10 == 0 or epoch < 5:
             print(f"{epoch+1:5d} | {train_loss:10.4f} | {train_acc:9.4f} | {val_loss:10.4f} | {val_acc:9.4f} | {epoch_time:6.2f}s")
 
@@ -380,10 +419,11 @@ def main():
             best_val_acc = val_acc
             best_epoch = epoch + 1
 
-        if val_acc >= 0.95 and train_acc >= 0.95:
-            print(f"\n✓ Both train and val achieved 95% accuracy")
-            print(f"Stopping early at epoch {epoch+1}")
-            break
+        # Early stopping disabled - train for full epochs
+        # if val_acc >= 0.95 and train_acc >= 0.95:
+        #     print(f"\n✓ Both train and val achieved 95% accuracy")
+        #     print(f"Stopping early at epoch {epoch+1}")
+        #     break
 
     total_training_time = time.time() - training_start_time
 
@@ -469,6 +509,36 @@ def main():
     json_file = results_dir / f"{base_name}.json"
     with open(json_file, 'w') as f:
         json.dump(results_json, f, indent=2)
+
+    # Log final results to wandb
+    if use_wandb:
+        wandb.log({
+            'final/train_loss': train_loss,
+            'final/train_accuracy': train_acc,
+            'final/val_loss': val_loss,
+            'final/val_accuracy': val_acc,
+            'final/test_loss': test_loss,
+            'final/test_accuracy': test_acc,
+            'final/train_val_gap': train_val_gap,
+            'final/train_test_gap': train_test_gap,
+            'final/val_test_gap': val_test_gap,
+            'training/total_time': total_training_time,
+            'training/best_epoch': best_epoch,
+            'training/best_val_acc': best_val_acc,
+            'model/total_params': total_params,
+        })
+
+        # Log the final results JSON as an artifact
+        artifact = wandb.Artifact(
+            name=f"results-{args.task}-AutoGraph",
+            type="results",
+            description=f"Results for AutoGraph on {args.task}"
+        )
+        artifact.add_file(str(json_file))
+        wandb.log_artifact(artifact)
+
+        wandb.finish()
+        print("\nWandb run completed")
 
     print(f"\nResults saved to: {json_file}")
 
